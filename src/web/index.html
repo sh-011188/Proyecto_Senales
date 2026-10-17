@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rPPG · Frecuencia cardíaca mediante video | Teoría de Señales</title>
+  <meta name="description" content="Estimación educativa de la frecuencia cardíaca sin contacto a partir de un video del rostro (rPPG): muestreo, ROI, series RGB, FFT y BPM.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="hero">
+    <div class="hero-badge">Teoría de Señales · Proyecto 9</div>
+    <h1>Frecuencia cardíaca <span class="grad">mediante video</span></h1>
+    <p class="hero-sub">Sube un video corto de tu rostro (frente / mejillas) o de tu dedo sobre la cámara con linterna. El sistema muestrea el color de la piel en cada fotograma, obtiene las señales R, G, B y encuentra tu pulso en su espectro de frecuencia.</p>
+    <svg class="ecg" viewBox="0 0 600 80" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 40 H120 L135 40 L145 20 L155 60 L165 5 L178 72 L188 40 H300 L315 40 L325 20 L335 60 L345 5 L358 72 L368 40 H480 L495 40 L505 20 L515 60 L525 5 L538 72 L548 40 H600"/>
+    </svg>
+  </header>
+
+  <main class="container">
+    <!-- 1. Subida -->
+    <section class="card glass" id="upload-section" aria-labelledby="upload-title">
+      <h2 id="upload-title"><span class="step">1</span> Cargar el video</h2>
+      <div class="upload-grid">
+        <label class="dropzone" id="dropzone" for="video-input">
+          <input type="file" id="video-input" accept="video/*" hidden>
+          <div class="dz-content" id="dz-content">
+            <div class="dz-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            </div>
+            <p class="dz-title">Arrastra tu video aquí</p>
+            <p class="dz-hint">o haz clic para elegirlo · Rostro o Dedo con linterna · 20-30 s</p>
+          </div>
+          <video id="video-preview" muted playsinline loop hidden></video>
+        </label>
+
+        <div class="options">
+          <div class="field">
+            <span class="label">Región de interés (ROI)</span>
+            <div class="segmented" role="radiogroup" id="roi-group">
+              <button type="button" class="seg active" data-value="frente" id="roi-frente">Frente</button>
+              <button type="button" class="seg" data-value="mejillas" id="roi-mejillas">Mejillas</button>
+              <button type="button" class="seg" data-value="rostro" id="roi-rostro">Rostro</button>
+              <button type="button" class="seg" data-value="dedo" id="roi-dedo">Dedo / Linterna</button>
+            </div>
+            <p class="roi-hint" id="roi-hint">💡 <b>Frente:</b> Detección automática de rostro y piel (rPPG sin contacto).</p>
+          </div>
+          <div class="field">
+            <label class="label" for="esperado">Pulso de referencia medido a mano (BPM, opcional)</label>
+            <input type="number" id="esperado" min="30" max="220" step="1" placeholder="p. ej. 72">
+          </div>
+          <div class="field">
+            <label class="label" for="snr">Ruido controlado: SNR = <b id="snr-val">0</b> dB</label>
+            <input type="range" id="snr" min="-10" max="20" step="1" value="0">
+          </div>
+          <label class="toggle" for="bandpass">
+            <input type="checkbox" id="bandpass">
+            <span class="track"><span class="thumb"></span></span>
+            <span>Filtro pasa banda 0.7-3 Hz <small>(tema entrega final)</small></span>
+          </label>
+          <div class="actions">
+            <button class="btn primary" id="btn-analizar" disabled>
+              <svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg> Analizar video
+            </button>
+            <button class="btn ghost" id="btn-demo" title="Genera un video sintético con BPM conocido">Probar con video sintético</button>
+          </div>
+        </div>
+      </div>
+      <details class="tips">
+        <summary>¿Cómo grabar un buen video? (Rostro o Dedo)</summary>
+        <ul>
+          <li><strong>Opción 1 - Rostro (rPPG sin contacto):</strong> Celular apoyado (sin sostenerlo), rostro de frente y completo, 20 a 30 s. Luz estable fija (sin sombras cambiantes) y sin hablar ni moverse.</li>
+          <li><strong>Opción 2 - Dedo en la cámara (PPG por contacto):</strong> Abre la cámara del celular con la linterna (flash) encendida, pon suavemente la yema del dedo sobre el lente hasta cubrirlo por completo y graba 20 s (la pantalla se verá roja pulsando). En opciones selecciona <em>"Dedo / Cámara"</em>.</li>
+          <li><strong>Referencia manual:</strong> Cuenta tus latidos en el cuello durante 30 s y multiplica por 2 (p. ej. 72) para comparar el error.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- 2. Progreso -->
+    <section class="card glass" id="progress-section" hidden aria-live="polite">
+      <div class="progress-wrap">
+        <div class="heart beating" aria-hidden="true">❤</div>
+        <div class="progress-info">
+          <p class="progress-msg" id="progress-msg">Preparando…</p>
+          <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+          <p class="progress-pct" id="progress-pct">0 %</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error -->
+    <section class="card error-card" id="error-section" hidden>
+      <h2>No se pudo analizar el video</h2>
+      <p id="error-msg"></p>
+      <p class="hint">Sugerencias: verifica que el rostro se vea de frente y bien iluminado, prueba otra ROI o un video más largo.</p>
+    </section>
+
+    <!-- 3. Resultados -->
+    <section id="results-section" hidden>
+      <h2 class="section-title"><span class="step">2</span> Resultados</h2>
+
+      <div class="kpis">
+        <div class="kpi main glass">
+          <div class="heart big" id="result-heart" aria-hidden="true">❤</div>
+          <div>
+            <p class="kpi-label">BPM estimado (POS)</p>
+            <p class="kpi-value"><span id="bpm-pos">--</span><small> BPM</small></p>
+            <p class="kpi-sub" id="bpm-pos-sub"></p>
+          </div>
+        </div>
+        <div class="kpi glass"><p class="kpi-label">Canal verde</p><p class="kpi-value" id="bpm-verde">--</p><p class="kpi-sub">método base</p></div>
+        <div class="kpi glass"><p class="kpi-label">Calidad del pico</p><p class="kpi-value" id="calidad">--</p><p class="kpi-sub" id="calidad-sub"></p></div>
+        <div class="kpi glass"><p class="kpi-label">Resolución 1/T</p><p class="kpi-value" id="resolucion">--</p><p class="kpi-sub">BPM</p></div>
+        <div class="kpi glass" id="kpi-error"><p class="kpi-label">Error vs. referencia</p><p class="kpi-value" id="error">--</p><p class="kpi-sub" id="error-sub">sin referencia</p></div>
+      </div>
+
+      <p class="resumen glass" id="resumen"></p>
+      <div id="warnings"></div>
+
+      <div class="tables">
+        <div class="card glass">
+          <h3>Adquisición (muestreo)</h3>
+          <table id="tabla-adq"></table>
+        </div>
+        <div class="card glass">
+          <h3>Caracterización de las series R, G, B</h3>
+          <div class="table-scroll"><table id="tabla-car"></table></div>
+        </div>
+      </div>
+
+      <div class="figures" id="figures"></div>
+
+      <div class="card glass downloads">
+        <div>
+          <h3>Descargar resultados</h3>
+          <p class="hint">Guardados también en <code id="carpeta"></code></p>
+        </div>
+        <div class="actions">
+          <a class="btn primary" id="dl-zip" href="#">Todo (.zip)</a>
+          <a class="btn ghost" id="dl-md" href="#" target="_blank">reporte.md</a>
+          <a class="btn ghost" id="dl-json" href="#" target="_blank">resultados.json</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="lightbox" id="lightbox" hidden><img id="lightbox-img" alt="Figura ampliada"></div>
+
+  <footer>
+    <p><strong>Uso educativo.</strong> No es una medición clínica ni diagnóstica. El video se procesa localmente en tu computador.</p>
+    <p class="refs">Basado en Verkruysse et al. (2008) · Poh et al. (2010) · Wang et al. (2017, POS)</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
