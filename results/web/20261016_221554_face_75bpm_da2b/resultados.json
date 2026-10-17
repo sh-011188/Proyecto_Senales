@@ -1,0 +1,107 @@
+{
+  "video": "/home/juanesouls/Projects/tareas/Teoria de senales/proyecto-teoria-senales-rppg/data/uploads/20261016_221554_face_75bpm.mp4",
+  "roi_mode": "frente",
+  "face_box": [
+    225,
+    106,
+    196,
+    196
+  ],
+  "roi": [
+    [
+      274,
+      149,
+      98,
+      35
+    ]
+  ],
+  "cobertura_piel": [
+    0.9790087463556851
+  ],
+  "use_bandpass": false,
+  "discard_seconds": 1.0,
+  "info": {
+    "fps": 30.0,
+    "Ts_s": 0.03333333333333333,
+    "n_frames_nominal": 600,
+    "width": 640,
+    "height": 480,
+    "duration_s": 20.0
+  },
+  "fs": 30.0,
+  "duration_s": 19.0,
+  "descripcion_canales": {
+    "R": {
+      "n_muestras": 570,
+      "fs_hz": 30.0,
+      "Ts_s": 0.03333333333333333,
+      "duracion_s": 19.0,
+      "minimo": 171.5625372245384,
+      "maximo": 177.74865991661704,
+      "amplitud_pico_a_pico": 6.186122692078641,
+      "media": 174.85933513056017,
+      "desv_estandar": 1.5653508104806906
+    },
+    "G": {
+      "n_muestras": 570,
+      "fs_hz": 30.0,
+      "Ts_s": 0.03333333333333333,
+      "duracion_s": 19.0,
+      "minimo": 133.22185824895772,
+      "maximo": 138.89398451459203,
+      "amplitud_pico_a_pico": 5.6721262656343185,
+      "media": 136.30175281861594,
+      "desv_estandar": 1.4403601048290655
+    },
+    "B": {
+      "n_muestras": 570,
+      "fs_hz": 30.0,
+      "Ts_s": 0.03333333333333333,
+      "duracion_s": 19.0,
+      "minimo": 113.19356759976178,
+      "maximo": 117.54079809410365,
+      "amplitud_pico_a_pico": 4.347230494341872,
+      "media": 115.6542098993762,
+      "desv_estandar": 1.039927833931544
+    }
+  },
+  "bpm_pos": 75.146484375,
+  "quality_pos": 0.6926555456097245,
+  "bpm_verde": 74.9267578125,
+  "quality_verde": 0.8930720045077819,
+  "resolucion_bpm": 3.1578947368421053,
+  "expected_bpm": 75.0,
+  "error_pos": 0.146484375,
+  "error_verde": -0.0732421875,
+  "ruido": {
+    "snr_db": 0.0,
+    "sigma": 0.01011511253992717,
+    "semilla": 0,
+    "bpm_original": 74.9267578125,
+    "bpm_con_ruido": 74.9267578125,
+    "calidad_original": 0.8930720045077819,
+    "calidad_con_ruido": 0.7658798414347158
+  },
+  "warnings": [],
+  "figuras": {
+    "01_roi": "01_roi.png",
+    "02_rgb_crudo": "02_rgb_crudo.png",
+    "03_preprocesado": "03_preprocesado.png",
+    "04_espectro_pos": "04_espectro_pos.png",
+    "05_espectro_verde": "05_espectro_verde.png",
+    "06_pulso_pos": "06_pulso_pos.png",
+    "07_ruido": "07_ruido.png"
+  },
+  "interpretaciones": {
+    "01_roi": "La ROI se ubicó automáticamente en la zona «frente» a partir del rostro detectado con el clasificador Haar (Viola-Jones). Se usan 1 región(es) y la máscara de piel (espacio YCrCb) conserva 98 % de los píxeles. Solo se promedian píxeles de piel: cabello, cejas y fondo no contienen pulso y agregarían ruido. Verifique en la figura que el recuadro verde cae sobre piel.",
+    "02_rgb_crudo": "Señal discreta muestreada a fs = 30.00 Hz (Ts = 33.3 ms), N = 570 muestras, duración útil 19.0 s (se descartaron los primeros 1.0 s por la auto-exposición). Niveles medios: R = 174.9, G = 136.3, B = 115.7 (escala 0-255). La variación pico a pico es pequeña respecto al nivel medio (R 3.5 %, G 4.2 %, B 3.8 %): el pulso es una variación de ~1 % montada sobre una componente DC grande. Deriva lenta a lo largo del video: R -1.80, G -1.44, B -1.11 niveles (cambios de luz o movimiento). Los saltos bruscos, si aparecen, suelen ser movimientos o ajustes de exposición.",
+    "03_preprocesado": "Se normalizó el canal verde por su media (x/media − 1, es decir AC/DC) y se quitó la tendencia lineal. La señal pasa de niveles absolutos (~136) a variación relativa centrada en cero (desviación ≈ 1.06 %). Así los canales son comparables, se elimina la componente DC (que dominaría el espectro en 0 Hz) y la deriva de -1.44 niveles.",
+    "04_espectro_pos": "La FFT (ventana de Hann, zero-padding ×8) muestra el contenido en frecuencia de la señal POS. Eje x: frecuencia en Hz (arriba en BPM = Hz × 60), de 0 a fs/2 = 15.0 Hz (Nyquist). Dentro de la banda fisiológica 0.7-3.0 Hz el pico dominante está en f0 = 1.252 Hz → 75.1 BPM. Calidad del pico 0.69 (confiabilidad alta). Resolución espectral real Δf = 1/T = 0.053 Hz ≈ 3.2 BPM: el zero-padding solo interpola, no mejora este límite. En 2·f0 = 2.50 Hz hay una componente de 48 % de la amplitud del pico (armónico: el pulso es periódico pero no senoidal, serie de Fourier).",
+    "05_espectro_verde": "Con solo el canal verde (método base) el pico está en 1.249 Hz → 74.9 BPM (calidad 0.89). Diferencia con POS: -0.2 BPM; los dos métodos coinciden dentro de la resolución espectral, lo que da más confianza en la estimación. El verde es el canal más sensible a la hemoglobina; POS combina R, G y B para cancelar las variaciones de brillo comunes a los tres canales.",
+    "06_pulso_pos": "Forma de onda de la señal de pulso extraída con POS. Las líneas rojas marcan el periodo estimado T0 = 1/f0 = 0.80 s; en 10 s caben ≈ 13 ciclos. Si las oscilaciones siguen las líneas, la señal es casi periódica y el pico espectral corresponde a los latidos. Variaciones de amplitud o ciclos irregulares indican ruido residual o variación natural del ritmo (respiración).",
+    "07_ruido": "Se sumó ruido blanco gaussiano a la señal G normalizada con SNR = 0 dB (σ = 1.01e-02, semilla 0). En el tiempo la forma del pulso se vuelve difícil de ver; en frecuencia el ruido blanco se reparte en todas las frecuencias y levanta el piso del espectro. El pico pasa de 74.9 a 74.9 BPM (+0.0) y la calidad de 0.89 a 0.77. Ruidos reales que afectan la señal: ruido del sensor y de cuantización (8 bits), compresión del video, movimiento de la cabeza, cambios y parpadeo de la iluminación (aliasing si la luz parpadea por encima de fs/2).",
+    "resumen": "BPM estimado (POS): 75.1 ± 1.6 BPM, confiabilidad alta. Canal verde: 74.9 BPM. Referencia manual 75.0 BPM → error POS +0.1, verde -0.1 BPM."
+  },
+  "peak_hz_pos": 1.25244140625,
+  "peak_hz_verde": 1.248779296875
+}
