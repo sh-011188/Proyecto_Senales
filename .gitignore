@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# Credenciales / secretos (nunca subir)
+.env
+*.key
+*.pem
+
+# Editor / sistema
+.vscode/
+.idea/
+.DS_Store
+
+# Archivos generados que se pueden regenerar con el código
+data/generated/
+
+# Videos subidos desde la interfaz web (privacidad) y zips temporales
+data/uploads/
+results/web/_*.zip
