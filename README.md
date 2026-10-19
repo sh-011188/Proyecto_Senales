@@ -33,20 +33,44 @@ Además, se incluye una **simulación con verdad conocida** y un video sintétic
 
 ---
 
-## 4. Cómo ejecutar (Paso a Paso)
+## 4. Cómo clonar y ejecutar (Guía Paso a Paso)
 
-### Paso 1: Requisitos e Instalación
-Requisitos: **Python 3.10+**. Abre una terminal en la carpeta del proyecto:
+### Paso 1: Descargar el proyecto
+Puedes clonar el repositorio o descargarlo como archivo ZIP:
+
+* **Opción con Git (Terminal):**
+  ```bash
+  git clone https://github.com/sh-011188/Proyecto_Senales.git
+  cd Proyecto_Senales
+  ```
+* **Opción sin Git (Descarga directa):**
+  1. Entra a [https://github.com/sh-011188/Proyecto_Senales](https://github.com/sh-011188/Proyecto_Senales).
+  2. Haz clic en el botón verde **Code** y selecciona **Download ZIP**.
+  3. Descomprime el archivo en tu computadora y abre una terminal dentro de la carpeta descomprimida.
+
+---
+
+### Paso 2: Configuración del Entorno Virtual (Python 3.10+)
+
+En tu terminal (dentro de la carpeta del proyecto):
 
 ```bash
 # 1. Crear el entorno virtual
 python -m venv .venv
 
-# 2. Activar el entorno virtual
-source .venv/bin/activate            # En Linux / macOS
-# .venv\Scripts\activate            # En Windows (CMD / PowerShell)
+# 2. Activar el entorno virtual:
+# En Linux / macOS:
+source .venv/bin/activate
 
-# 3. Instalar librerías
+# En Windows (Símbolo del sistema / CMD):
+.venv\Scripts\activate
+
+# En Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# Nota: Si PowerShell muestra error de permisos de scripts, ejecuta antes:
+# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+# 3. Instalar dependencias (solo tarda unos segundos):
 pip install -r requirements.txt
 ```
 
@@ -65,10 +89,10 @@ Es la forma más cómoda y visual de probar el proyecto:
    - **Cargar el video:** Arrastra tu archivo de video (`.mp4`, `.mov`, `.avi`, etc.) o haz clic en el recuadro para seleccionarlo.
    - **Seleccionar Modalidad / ROI:**
      - `Frente` / `Mejillas`: Para videos del rostro (rPPG sin contacto).
-     - `Dedo / Linterna`: Si grabaste apoyando el dedo sobre el lente de la cámara con el flash encendido.
+     - `Dedo / Linterna`: Para videos apoyando la yema sobre la cámara con flash/linterna *(el sistema también cuenta con auto-detección inteligente)*.
    - **Referencia manual (opcional):** Si mediste tus pulsaciones en el cuello o muñeca (ej. 72), escríbelo en la casilla para calcular el error exacto.
    - **Analizar:** Haz clic en el botón **"Analizar video"**.
-   - **Modo Demo sin cámara:** También puedes presionar el botón **"Probar con video sintético"** para ver todo el flujo con una señal sintética de verdad conocida.
+   - **Modo Demo sin cámara:** También puedes presionar el botón **"Probar con video sintético"** para ver todo el flujo con una señal sintética de verdad conocida (~72 BPM).
 
 3. **Para detener / cerrar la página web:**
    - En la terminal donde la iniciaste, presiona **`Ctrl + C`**.
