@@ -164,9 +164,12 @@ def evaluate_on_simulation(out_dir=None, show=False, **sim_kwargs):
                         save_path=_save_path(out_dir, "sim_03_espectro_pos.png"))
     out = {"sim": sim, "truth_bpm": truth, "est_pos": est_pos, "est_green": est_green,
            "error_pos": est_pos["bpm"] - truth, "error_verde": est_green["bpm"] - truth}
-    print(f"BPM real (media): {truth:.2f} | POS: {est_pos['bpm']:.2f} (error {out['error_pos']:+.2f}) "
-          f"| verde: {est_green['bpm']:.2f} (error {out['error_verde']:+.2f}) "
-          f"| resolución espectral: ±{est_pos['resolucion_bpm']/2:.1f} BPM")
+    try:
+        print(f"BPM real (media): {truth:.2f} | POS: {est_pos['bpm']:.2f} (error {out['error_pos']:+.2f}) "
+              f"| verde: {est_green['bpm']:.2f} (error {out['error_verde']:+.2f}) "
+              f"| resolución espectral: ±{est_pos['resolucion_bpm']/2:.1f} BPM")
+    except OSError:
+        pass
     if show:
         plt.show()
     else:
@@ -175,14 +178,17 @@ def evaluate_on_simulation(out_dir=None, show=False, **sim_kwargs):
 
 
 def _print_summary(r, expected_bpm):
-    print("=" * 60)
-    print(f"fs = {r['fs']:.3f} Hz (Ts = {1/r['fs']*1000:.2f} ms) | duración útil = {r['duration_s']:.1f} s")
-    print(f"Resolución espectral real ≈ {r['resolucion_bpm']:.1f} BPM (1/T)")
-    print(f"BPM estimado (POS):   {r['bpm_pos']:.1f}  | calidad {r['quality_pos']:.2f}")
-    print(f"BPM estimado (verde): {r['bpm_verde']:.1f}  | calidad {r['quality_verde']:.2f}")
-    if expected_bpm is not None:
-        print(f"Referencia manual: {expected_bpm:.1f} -> error POS {r['error_pos']:+.1f} | verde {r['error_verde']:+.1f}")
-    for w in r["warnings"]:
-        print("AVISO:", w)
-    print("Uso educativo: no es una medición clínica ni diagnóstica.")
-    print("=" * 60)
+    try:
+        print("=" * 60)
+        print(f"fs = {r['fs']:.3f} Hz (Ts = {1/r['fs']*1000:.2f} ms) | duración útil = {r['duration_s']:.1f} s")
+        print(f"Resolución espectral real ≈ {r['resolucion_bpm']:.1f} BPM (1/T)")
+        print(f"BPM estimado (POS):   {r['bpm_pos']:.1f}  | calidad {r['quality_pos']:.2f}")
+        print(f"BPM estimado (verde): {r['bpm_verde']:.1f}  | calidad {r['quality_verde']:.2f}")
+        if expected_bpm is not None:
+            print(f"Referencia manual: {expected_bpm:.1f} -> error POS {r['error_pos']:+.1f} | verde {r['error_verde']:+.1f}")
+        for w in r["warnings"]:
+            print("AVISO:", w)
+        print("Uso educativo: no es una medición clínica ni diagnóstica.")
+        print("=" * 60)
+    except OSError:
+        pass

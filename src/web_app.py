@@ -15,11 +15,38 @@ Todo corre en el computador local: el video NO se envía a ningún servidor exte
 import argparse
 import re
 import shutil
+import sys
 import threading
 import uuid
 import webbrowser
 from datetime import datetime
 from pathlib import Path
+
+
+class _SafeWriter:
+    def __init__(self, stream):
+        self._stream = stream
+
+    def write(self, s):
+        try:
+            return self._stream.write(s)
+        except OSError:
+            return len(s)
+
+    def flush(self):
+        try:
+            return self._stream.flush()
+        except OSError:
+            pass
+
+    def __getattr__(self, item):
+        return getattr(self._stream, item)
+
+
+if not isinstance(sys.stdout, _SafeWriter):
+    sys.stdout = _SafeWriter(sys.stdout)
+if not isinstance(sys.stderr, _SafeWriter):
+    sys.stderr = _SafeWriter(sys.stderr)
 
 import matplotlib
 
