@@ -9,6 +9,23 @@
   const dz = $("dropzone");
   const input = $("video-input");
 
+  // ---------- Opciones ----------
+  const ROI_HINTS = {
+    frente: "💡 <b>Frente:</b> Detección automática de rostro (Haar) y piel YCrCb. Excelente perfusión capilar sin contacto.",
+    mejillas: "💡 <b>Mejillas:</b> Dos regiones en los pómulos. Ideal si tienes flequillo o cabello sobre la frente.",
+    rostro: "💡 <b>Rostro:</b> Región amplia que cubre todo el óvalo facial.",
+    dedo: "💡 <b>Dedo con linterna:</b> Apoya la yema del dedo sobre la cámara del celular con la linterna encendida. ¡No requiere rostro y la señal de pulso es muy directa!"
+  };
+
+  function selectRoi(mode, customHint = null) {
+    roiMode = mode;
+    document.querySelectorAll("#roi-group .seg").forEach((x) => {
+      if (x.dataset.value === mode) x.classList.add("active");
+      else x.classList.remove("active");
+    });
+    $("roi-hint").innerHTML = customHint || ROI_HINTS[roiMode] || "";
+  }
+
   function setFile(f) {
     if (!f) return;
     file = f;
@@ -18,11 +35,43 @@
     prev.play().catch(() => {});
     $("dz-content").hidden = true;
     dz.querySelector(".dz-file")?.remove();
+
+    // Auto-detectar por nombre de archivo
+    if (/(dedo|finger|linterna|flash|contacto|contact|ppg)/i.test(f.name)) {
+      selectRoi("dedo", "✨ <b>Detectado por nombre:</b> Video de dedo / linterna. Opción seleccionada automáticamente.");
+    }
+
     const tag = document.createElement("div");
     tag.className = "dz-file";
     tag.innerHTML = `<span>🎬 ${f.name}</span><span>${(f.size / 1e6).toFixed(1)} MB · clic para cambiar</span>`;
     dz.appendChild(tag);
     $("btn-analizar").disabled = false;
+
+    // Auto-detectar analizando el primer fotograma en un canvas rápido
+    prev.onloadeddata = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 40;
+        canvas.height = 40;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(prev, 0, 0, 40, 40);
+        const data = ctx.getImageData(0, 0, 40, 40).data;
+        let rSum = 0, gSum = 0, bSum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          rSum += data[i];
+          gSum += data[i + 1];
+          bSum += data[i + 2];
+        }
+        const n = data.length / 4;
+        const avgR = rSum / n;
+        const avgG = gSum / n;
+        const avgB = bSum / n;
+        // Predominio de rojo típico de dedo iluminado con linterna
+        if (avgR > 40 && (avgR > avgB * 1.15 || (avgR > 50 && avgB < 25))) {
+          selectRoi("dedo", "✨ <b>Detectado automáticamente:</b> Video de dedo / linterna (PPG por contacto). Opción activada.");
+        }
+      } catch (_) {}
+    };
   }
 
   input.addEventListener("change", (e) => setFile(e.target.files[0]));
@@ -32,22 +81,21 @@
     dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove("drag"); }));
   dz.addEventListener("drop", (e) => setFile(e.dataTransfer.files[0]));
 
-  // ---------- Opciones ----------
-  const ROI_HINTS = {
-    frente: "💡 <b>Frente:</b> Detección automática de rostro (Haar) y piel YCrCb. Excelente perfusión capilar sin contacto.",
-    mejillas: "💡 <b>Mejillas:</b> Dos regiones en los pómulos. Ideal si tienes flequillo o cabello sobre la frente.",
-    rostro: "💡 <b>Rostro:</b> Región amplia que cubre todo el óvalo facial.",
-    dedo: "💡 <b>Dedo con flash:</b> Apoya la yema del dedo sobre la cámara del celular con la linterna encendida. ¡No requiere rostro y la señal es 10× más nítida!"
-  };
-
   document.querySelectorAll("#roi-group .seg").forEach((b) =>
-    b.addEventListener("click", () => {
-      document.querySelectorAll("#roi-group .seg").forEach((x) => x.classList.remove("active"));
-      b.classList.add("active");
-      roiMode = b.dataset.value;
-      $("roi-hint").innerHTML = ROI_HINTS[roiMode] || "";
-    }));
-  $("snr").addEventListener("input", (e) => ($("snr-val").textContent = e.target.value));
+    b.addEventListener("click", () => selectRoi(b.dataset.value)));
+  const updateSnrBadge = (val) => {
+    $("snr-val").textContent = val;
+    const v = Number(val);
+    let txt = "";
+    if (v >= 15) txt = `${v} dB: Señal muy limpia (poco ruido)`;
+    else if (v > 0) txt = `${v} dB: Ruido leve / moderado`;
+    else if (v === 0) txt = "0 dB: Señal = Ruido (potencia igualada)";
+    else if (v >= -5) txt = `${v} dB: Ruido dominante (más ruido que pulso)`;
+    else txt = `${v} dB: Prueba extrema (10× más ruido que pulso)`;
+    const badge = $("snr-badge");
+    if (badge) badge.textContent = txt;
+  };
+  $("snr").addEventListener("input", (e) => updateSnrBadge(e.target.value));
 
   function commonForm() {
     const fd = new FormData();

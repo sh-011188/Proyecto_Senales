@@ -55,8 +55,15 @@
             <input type="number" id="esperado" min="30" max="220" step="1" placeholder="p. ej. 72">
           </div>
           <div class="field">
-            <label class="label" for="snr">Ruido controlado: SNR = <b id="snr-val">0</b> dB</label>
+            <div class="label-with-badge">
+              <label class="label" for="snr">Ruido controlado: SNR = <b id="snr-val">0</b> dB</label>
+              <span class="badge-info" id="snr-badge">0 dB: Señal = Ruido</span>
+            </div>
             <input type="range" id="snr" min="-10" max="20" step="1" value="0">
+            <p class="field-help" id="snr-help">
+              🧪 <b>¿Para qué sirve?</b> Simula la robustez del algoritmo ante interferencias sumando ruido blanco a la señal. 
+              <b>+20 dB</b> es señal limpia (ruido casi nulo), <b>0 dB</b> el ruido iguala la potencia del pulso, y <b>-10 dB</b> el ruido es 10 veces más fuerte que el pulso.
+            </p>
           </div>
           <label class="toggle" for="bandpass">
             <input type="checkbox" id="bandpass">
@@ -71,14 +78,60 @@
           </div>
         </div>
       </div>
-      <details class="tips">
-        <summary>¿Cómo grabar un buen video? (Rostro o Dedo)</summary>
-        <ul>
-          <li><strong>Opción 1 - Rostro (rPPG sin contacto):</strong> Celular apoyado (sin sostenerlo), rostro de frente y completo, 20 a 30 s. Luz estable fija (sin sombras cambiantes) y sin hablar ni moverse.</li>
-          <li><strong>Opción 2 - Dedo en la cámara (PPG por contacto):</strong> Abre la cámara del celular con la linterna (flash) encendida, pon suavemente la yema del dedo sobre el lente hasta cubrirlo por completo y graba 20 s (la pantalla se verá roja pulsando). En opciones selecciona <em>"Dedo / Cámara"</em>.</li>
-          <li><strong>Referencia manual:</strong> Cuenta tus latidos en el cuello durante 30 s y multiplica por 2 (p. ej. 72) para comparar el error.</li>
-        </ul>
-      </details>
+
+      <!-- Guía paso a paso para cualquier usuario -->
+      <section class="recording-guide" aria-label="Guía para grabar un buen video">
+        <div class="guide-header">
+          <h3>📖 Guía práctica: ¿Cómo grabar el video para que mida exactamente tu pulso?</h3>
+        </div>
+        <div class="guide-grid">
+          <!-- Card 1: Dedo con linterna -->
+          <article class="guide-card finger">
+            <div class="guide-card-top">
+              <span class="guide-card-title">🔴 Dedo en la cámara</span>
+              <span class="guide-tag">PPG por contacto</span>
+            </div>
+            <ul class="guide-list">
+              <li><strong>Tapar antes de grabar:</strong> Enciende la linterna/flash y cubre el lente por completo con la yema <em>antes</em> de iniciar la grabación (evita que entre luz blanca o saltos de color).</li>
+              <li><strong>Presión muy suave:</strong> Apoya el dedo sin presionar fuerte. Si aprietas de más, cortas la microcirculación capilar y no habrá señal que detectar.</li>
+              <li><strong>Totalmente quieto:</strong> No deslices ni levantes el dedo durante la toma; cualquier movimiento brusco genera un escalón que confunde a la FFT.</li>
+            </ul>
+            <div class="guide-note">💡 Selecciona la opción <b>«Dedo / Linterna»</b> (el sistema también intentará detectarlo solo).</div>
+          </article>
+
+          <!-- Card 2: Rostro -->
+          <article class="guide-card face">
+            <div class="guide-card-top">
+              <span class="guide-card-title">👤 Rostro (Frente / Mejillas)</span>
+              <span class="guide-tag">rPPG sin contacto</span>
+            </div>
+            <ul class="guide-list">
+              <li><strong>Celular apoyado:</strong> Coloca el celular sobre una mesa o soporte. Sostenerlo con la mano introduce temblores que dañan la señal.</li>
+              <li><strong>Iluminación frontal fija:</strong> La luz debe darte de frente (luz natural de ventana o lámpara estable). Evita contraluces o sombras en movimiento.</li>
+              <li><strong>Despejar la piel:</strong> Si usas <em>Frente</em>, retira el flequillo o cabello. Si tienes flequillo, elige <em>Mejillas</em>.</li>
+              <li><strong>Expresión neutra:</strong> No hables, sonrías ni muevas la cabeza durante el video; respira con tranquilidad.</li>
+            </ul>
+            <div class="guide-note">💡 El detector Haar ubicará tu rostro automáticamente.</div>
+          </article>
+
+          <!-- Card 3: Regla de oro y Calidad -->
+          <article class="guide-card theory">
+            <div class="guide-card-top">
+              <span class="guide-card-title">⏱️ Reglas clave y Calidad</span>
+              <span class="guide-tag">Resolución</span>
+            </div>
+            <ul class="guide-list">
+              <li><strong>Graba entre 20 y 30 segundos:</strong> La precisión en frecuencia depende del tiempo ($\Delta f = 1/T$). Con solo 7 segundos el margen de error es de <b>±8.6 BPM</b>; con 25 segundos baja a <b>±2.4 BPM</b>.</li>
+              <li><strong>Semáforo de Calidad del pico:</strong>
+                <br>🟢 <b>&gt; 0.50 (Alta):</b> Medición muy limpia y confiable.
+                <br>🟡 <b>0.30 - 0.50 (Media):</b> Pico aceptable con algo de ruido.
+                <br>🔴 <b>&lt; 0.30 (Baja):</b> El video tuvo saltos o movimiento; repite la toma.</li>
+              <li><strong>Referencia manual:</strong> Cuenta tus pulsaciones 30 s en el cuello o muñeca y multiplícalas por 2 (ej. 72) para comparar el error.</li>
+            </ul>
+            <div class="guide-note">💡 ¡El pulso cardíaco modula apenas el 1% de la luz! La estabilidad es clave.</div>
+          </article>
+        </div>
+      </section>
     </section>
 
     <!-- 2. Progreso -->
@@ -97,7 +150,7 @@
     <section class="card error-card" id="error-section" hidden>
       <h2>No se pudo analizar el video</h2>
       <p id="error-msg"></p>
-      <p class="hint">Sugerencias: verifica que el rostro se vea de frente y bien iluminado, prueba otra ROI o un video más largo.</p>
+      <p class="hint">Sugerencias: Si subiste un video de tu dedo sobre la cámara con linterna, selecciona la opción «Dedo / Linterna» arriba. Para videos de rostro, verifica que se vea de frente, sin girar y bien iluminado.</p>
     </section>
 
     <!-- 3. Resultados -->

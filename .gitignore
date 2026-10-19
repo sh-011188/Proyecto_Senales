@@ -22,3 +22,5 @@ data/generated/
 # Videos subidos desde la interfaz web (privacidad) y zips temporales
 data/uploads/
 results/web/_*.zip
+results/web/*/
+!results/web/20261016_*

@@ -43,6 +43,39 @@ def detect_face_box(frame_bgr, cascade=None):
     return int(x), int(y), int(w), int(h)
 
 
+def is_finger_or_contact_frames(frames):
+    """
+    Detecta si los fotogramas corresponden a un video de dedo sobre la cámara/linterna
+    (PPG por contacto / transiluminación tisular) o primer plano de piel sin rostro.
+    """
+    if not frames:
+        return False
+    # Si detecta rostros con confianza, no es solo un dedo
+    try:
+        cascade = _load_cascade()
+        boxes = [b for b in (detect_face_box(f, cascade) for f in frames[:10]) if b is not None]
+        if len(boxes) >= 2:
+            return False
+    except Exception:
+        pass
+
+    # Analizar predominancia cromática en BGR
+    sample = frames[:15]
+    r_vals = [float(np.mean(f[:, :, 2])) for f in sample]
+    g_vals = [float(np.mean(f[:, :, 1])) for f in sample]
+    b_vals = [float(np.mean(f[:, :, 0])) for f in sample]
+
+    med_r = float(np.median(r_vals))
+    med_g = float(np.median(g_vals))
+    med_b = float(np.median(b_vals))
+
+    # En dedo con linterna o piel en contacto, el canal rojo domina claramente
+    # sobre el azul debido a la absorción de hemoglobina y dispersión en tejido
+    if med_r > 30 and (med_r > 1.10 * med_b or (med_r > 40 and med_b < 25)):
+        return True
+    return False
+
+
 def estimate_face_box(frames):
     """Mediana de las detecciones en varios fotogramas (más estable que una sola)."""
     cascade = _load_cascade()
@@ -50,8 +83,9 @@ def estimate_face_box(frames):
     if len(boxes) < max(3, len(frames) // 5):
         raise RuntimeError(
             "No se detectó un rostro frontal de forma consistente. "
-            "Revisa que el rostro se vea de frente, bien iluminado y sin girar el video, "
-            "o define la ROI a mano con manual_roi=(x, y, w, h)."
+            "Revisa que el rostro se vea de frente, bien iluminado y sin girar el video. "
+            "Si subiste un video de tu dedo sobre la cámara con linterna, "
+            "usa la opción 'Dedo / Linterna' o define la ROI manual."
         )
     return tuple(int(v) for v in np.median(np.array(boxes), axis=0))
 

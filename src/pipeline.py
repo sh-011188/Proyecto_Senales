@@ -17,7 +17,8 @@ from .bpm import estimate_bpm, green_channel_signal
 from .config import (DISCARD_SECONDS, FACE_DETECT_FRAMES, MIN_DURATION_SECONDS, NOISE_SEED,
                      NOISE_SNR_DB)
 from .preprocessing import add_white_noise, discard_start
-from .roi import build_skin_masks, estimate_face_box, rois_from_face_box, validate_manual_roi
+from .roi import (build_skin_masks, estimate_face_box, is_finger_or_contact_frames,
+                  rois_from_face_box, validate_manual_roi)
 from .signal_extraction import extract_rgb_series
 from .simulation import simulate_rgb
 from .video_io import get_video_info, read_first_frames
@@ -50,6 +51,7 @@ def analyze_video(video_path, roi_mode="frente", manual_roi=None, max_seconds=No
 
     _p(0.06, "Detectando el rostro y definiendo la ROI")
     frames = read_first_frames(video_path, FACE_DETECT_FRAMES)
+    auto_dedo_fallback = False
     if manual_roi is not None:
         rois, face_box = validate_manual_roi(manual_roi, frames[0].shape), None
     elif roi_mode == "dedo":
@@ -58,10 +60,25 @@ def analyze_video(video_path, roi_mode="frente", manual_roi=None, max_seconds=No
         rois, face_box = [(int(0.15 * w), int(0.15 * h), int(0.70 * w), int(0.70 * h))], None
         use_skin_mask = False
     else:
-        face_box = estimate_face_box(frames)
-        rois = rois_from_face_box(face_box, roi_mode, frames[0].shape)
+        try:
+            face_box = estimate_face_box(frames)
+            rois = rois_from_face_box(face_box, roi_mode, frames[0].shape)
+        except RuntimeError:
+            if is_finger_or_contact_frames(frames):
+                h, w = frames[0].shape[:2]
+                rois, face_box = [(int(0.15 * w), int(0.15 * h), int(0.70 * w), int(0.70 * h))], None
+                use_skin_mask = False
+                roi_mode = "dedo"
+                auto_dedo_fallback = True
+            else:
+                raise
     masks, warnings, coverages = (build_skin_masks(frames[0], rois) if use_skin_mask
                                   else ([None] * len(rois), [], [1.0] * len(rois)))
+    if auto_dedo_fallback:
+        warnings.append(
+            "No se detectó un rostro en el video, pero se identificó automáticamente que corresponde a un dedo "
+            "sobre la cámara con linterna (PPG por contacto). Se procesó con éxito en modo «Dedo / Linterna»."
+        )
     plots.plot_frame_with_roi(frames[0], rois, face_box, masks, _save_path(out_dir, f"{prefix}01_roi.png"))
 
     _p(0.12, "Extrayendo las series R, G, B fotograma a fotograma")

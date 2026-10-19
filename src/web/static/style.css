@@ -139,9 +139,43 @@ input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border: 0; bord
 .btn.ghost:hover { background: hsla(232, 40%, 40%, 0.35); transform: translateY(-2px); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.tips { margin-top: 22px; color: var(--muted); font-size: 0.9rem; }
-.tips summary { cursor: pointer; color: var(--text); font-weight: 500; }
-.tips ul { margin: 10px 0 0 20px; display: grid; gap: 4px; }
+.label-with-badge { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.badge-info {
+  display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+  background: hsla(262, 70%, 55%, 0.2); border: 1px solid hsla(262, 70%, 65%, 0.35); color: #d6b4fc;
+}
+.field-help {
+  font-size: 0.80rem; color: var(--muted); line-height: 1.45; background: hsla(232, 40%, 8%, 0.6);
+  padding: 8px 12px; border-radius: 8px; border-left: 3px solid var(--violet); margin-top: 4px;
+}
+.field-help b { color: var(--text); }
+
+/* ---------- Guía de Grabación ---------- */
+.recording-guide { margin-top: 26px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
+.guide-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; cursor: pointer; }
+.guide-header h3 { font-family: "Outfit"; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
+.guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.guide-card {
+  background: hsla(232, 40%, 10%, 0.65); border: 1px solid var(--glass-border); border-radius: 14px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; transition: transform .2s, border-color .2s;
+}
+.guide-card:hover { transform: translateY(-2px); border-color: hsla(346, 88%, 62%, 0.4); }
+.guide-card.finger { border-top: 3px solid var(--rose); }
+.guide-card.face { border-top: 3px solid var(--teal); }
+.guide-card.theory { border-top: 3px solid var(--amber); }
+.guide-card-top { display: flex; align-items: center; justify-content: space-between; }
+.guide-card-title { font-family: "Outfit"; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.guide-tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.04em; }
+.guide-card.finger .guide-tag { background: hsla(346, 88%, 60%, 0.2); color: hsl(346, 88%, 75%); }
+.guide-card.face .guide-tag { background: hsla(168, 70%, 50%, 0.2); color: hsl(168, 70%, 75%); }
+.guide-card.theory .guide-tag { background: hsla(40, 95%, 50%, 0.2); color: hsl(40, 95%, 75%); }
+.guide-list { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 0.86rem; color: var(--muted); }
+.guide-list strong { color: var(--text); }
+.guide-list li { line-height: 1.4; }
+.guide-note { font-size: 0.80rem; padding: 6px 10px; border-radius: 6px; background: hsla(232, 30%, 15%, 0.8); color: var(--muted); border-left: 2px solid; }
+.guide-card.finger .guide-note { border-color: var(--rose); }
+.guide-card.face .guide-note { border-color: var(--teal); }
+.guide-card.theory .guide-note { border-color: var(--amber); }
 
 /* ---------- Progress ---------- */
 .progress-wrap { display: flex; align-items: center; gap: 26px; }
