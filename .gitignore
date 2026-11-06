@@ -24,3 +24,6 @@ data/uploads/
 results/web/_*.zip
 results/web/*/
 !results/web/20261016_*
+
+# Guías locales privadas
+docs/guia_explicativa_pagina.md
