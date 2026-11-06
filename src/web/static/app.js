@@ -218,8 +218,8 @@
     const base = `/resultados/${jobId}/`;
     const wide = new Set(["01_roi", "02_rgb_crudo", "07_ruido"]);
     const stamp = Date.now();
-    $("figures").innerHTML = Object.entries(r.titulos).map(([key, title], i) => `
-      <article class="fig card glass ${wide.has(key) ? "wide" : ""}" style="animation-delay:${i * 80}ms">
+    $("figures").innerHTML = Object.entries(r.titulos).map(([key, title]) => `
+      <article class="fig card glass ${wide.has(key) ? "wide" : ""}">
         <div class="fig-img"><img src="${base}${r.figuras[key]}?t=${stamp}" alt="${title}" loading="lazy"></div>
         <div class="fig-body">
           <span class="fig-tag">Interpretación</span>

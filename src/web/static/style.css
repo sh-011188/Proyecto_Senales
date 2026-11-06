@@ -225,8 +225,10 @@ td:first-child { font-family: "Inter"; font-weight: 600; }
 .ch-R { color: hsl(0, 85%, 68%); } .ch-G { color: hsl(140, 60%, 60%); } .ch-B { color: hsl(210, 90%, 70%); }
 
 .figures { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.figures:empty { display: none; }
 @media (max-width: 900px) { .figures { grid-template-columns: 1fr; } }
-.fig { padding: 0; overflow: hidden; display: flex; flex-direction: column; opacity: 0; animation: rise .5s ease forwards; }
+.fig { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+
 .fig.wide { grid-column: 1 / -1; }
 .fig-img { background: #fff; cursor: zoom-in; overflow: hidden; }
 .fig-img img { width: 100%; display: block; transition: transform .4s; }
